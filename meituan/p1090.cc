@@ -1,36 +1,41 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+int n, x, y;
+int dp[5005][55];
+int a[105], b[105];
 
 int main() {
-  int n, x, y;
+#ifdef INPUT
+  freopen("in.txt", "r", stdin);
+#endif
+
   cin >> n >> x >> y;
-
-  vector<pair<int, int>> items(n);
-  for (int i = 0; i < n; ++i) {
-    cin >> items[i].first >> items[i].second;
+  for (int i = 1; i <= n; ++i) {
+    cin >> a[i] >> b[i];
   }
 
-  sort(items.begin(), items.end(), [](const pair<int, int>& a, const pair<int, int>&b) {
-    if (a.second == b.second) return a.first > b.first;
-    return a.second < b.second;
-  });
-
-  vector<int> prices(n);
-  for (int i = 0; i < n; ++i) {
-    if (y > 0) {  // discounted price < original price
-      if (items[i].first > items[i].second) --y;
-      prices[i] = items[i].second;
-    } else {
-      prices[i] = items[i].first;
-    }
-  }
-  sort(prices.begin(), prices.end());
+  // memset(dp, 0, sizeof(dp)); // 默认初始化为0
+  // dp[i][j][k]: 前i件商品，花费不超过j元，使用k个优惠卷 最多能买几件
   int cnt = 0, cost = 0;
-  for (int i = 0; i < n && x >= prices[i]; i++) {
-    ++cnt;
-    cost += prices[i];
-    x -= prices[i];
+  for (int i = 1; i <= n; ++i) {
+    for (int j = x; j >= 0; --j) {
+      for (int k = 0; k <= y; ++k) {
+        if (j >= a[i]) {
+          dp[j][k] = max(dp[j][k], dp[j - a[i]][k] + 1);
+        }
+        if (j >= b[i] && k > 0) {
+          dp[j][k] = max(dp[j][k], dp[j - b[i]][k - 1] + 1);
+        }
+
+        if (dp[j][k] > cnt) {
+          cnt = dp[j][k];
+          cost = j;
+        } else if (dp[j][k] == cnt) {
+          cost = min(cost, j);
+        }
+      }
+    }
   }
   cout << cnt << " " << cost << endl;
   return 0;
